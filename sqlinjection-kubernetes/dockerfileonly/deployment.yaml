@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqlinjection
+spec:
+  selector:
+    matchLabels:
+      app: sqlinjection
+  template:
+    metadata:
+      labels:
+        app: sqlinjection
+    spec:
+      containers:
+      - name: sqlinjectiondockerfile
+        image: sqlinjectiondockerfile:latest
+        imagePullPolicy: Never

@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+    web:
+      container_name: web_container
+      build: 
+        context: .
+        dockerfile: ./Dockerfile-web
+      depends_on:
+        - db
+      ports:
+        - "8000:80"
+
+    db:
+      container_name: db_container
+      build:
+        context: .
+        dockerfile: ./Dockerfile-db
+      volumes:
+        - ./app/init.d/:/docker-entrypoint-initdb.d
+      environment:
+        MYSQL_ROOT_PASSWORD: passSample0701
+        MYSQL_USER: phpUser
+        MYSQL_PASSWORD: myPassword
+        MYSQL_DATABASE: userinfo

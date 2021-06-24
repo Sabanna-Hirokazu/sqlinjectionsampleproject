@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlinjection-apache
+  labels:
+    app: apache
+spec:
+  type: LoadBalancer
+  selector:
+    app: apache
+    tier: apacheservice
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 80
+  externalIPs:
+  - 10.0.2.15
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqlinjection-apache
+  labels:
+    app: apache
+spec:
+  selector:
+    matchLabels:
+      app: apache
+      tier: apacheservice
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: apache
+        tier: apacheservice
+    spec:
+      containers:
+      - image: sqlinjectioncompose_web:latest
+        name: apache
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+          name: apache
+        volumeMounts:
+        - name: config-volume
+          mountPath: /var/www/html/
+      volumes:
+      - name: config-volume
+        configMap:
+          name: php-config
+          items:
+          - key: index.html
+            path: index.html
+          - key: sqlsample.php
+            path: sqlsample.php

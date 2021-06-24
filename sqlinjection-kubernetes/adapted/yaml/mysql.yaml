@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlinjection-mysql
+  labels:
+    app: sqlinjection
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: sqlinjection
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqlinjection-mysql
+  labels:
+    app: sqlinjection
+spec:
+  selector:
+    matchLabels:
+      app: sqlinjection
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: sqlinjection
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: rootpassword
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: userpass
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: database
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-init-config
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-init-config
+        configMap:
+          name: db-init-configmap
+          items:
+          - key: initsql.sql
+            path: initsql.sql

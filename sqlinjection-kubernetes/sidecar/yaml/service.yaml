@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlinjection-sidecar
+  labels:
+    app: sqlinjection
+spec:
+  selector:
+    app: sqlinjection
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 80
+    protocol: TCP
+  externalIPs:
+  - 10.0.2.15

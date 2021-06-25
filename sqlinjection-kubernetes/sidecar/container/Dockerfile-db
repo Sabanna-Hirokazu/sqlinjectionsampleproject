@@ -1,0 +1,7 @@
+FROM mysql:5.7
+
+# --
+# -- install mysql and set up root account
+# --
+RUN apt-get update && apt-get upgrade -y 
+

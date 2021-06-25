@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqlinjection-sidecar
+  labels:
+    app: sqlinjection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sqlinjection
+  template:
+    metadata:
+      labels:
+        app: sqlinjection
+    spec:
+      containers:
+      # first container mysql 
+      - image: mysql:5.7
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: rootpassword
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: userpass
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mysql-userinfo
+              key: database
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-init-config
+          mountPath: /docker-entrypoint-initdb.d
+      # second container php apache
+      - image: sqlinjectioncompose_web:latest
+        name: apache
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+          name: apache
+        volumeMounts:
+        - name: config-volume
+          mountPath: /var/www/html/
+      volumes:
+      - name: mysql-init-config
+        configMap:
+          name: db-init-configmap
+          items:
+          - key: initsql.sql
+            path: initsql.sql
+      - name: config-volume
+        configMap:
+          name: php-config
+          items:
+          - key: index.html
+            path: index.html
+          - key: sqlsample.php
+            path: sqlsample.php

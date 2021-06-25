@@ -1,0 +1,12 @@
+secretGenerator:
+- name: mysql-userinfo
+  literals:
+  - rootpassword=mySamplePass103
+  - username=phpUser
+  - userpass=myPassword
+  - database=userinfo 
+resources:
+  - deployment.yaml
+  - service.yaml
+  - conf-php.yaml
+  - conf-mysql.yaml
